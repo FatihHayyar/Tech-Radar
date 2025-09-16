@@ -48,3 +48,5 @@ Das Projekt bildet zwei Hauptteile ab:
    git clone https://github.com/FatihHayyar/Tech-Radar.git
    cd Tech-Radar/backend
    ```
+   > Hinweis: Aktuell ist nur das Backend implementiert.
+   > Das Frontend (Viewer) folgt in den nächsten Schritten.

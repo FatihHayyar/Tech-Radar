@@ -7,9 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// routes
-const authRoutes = require('./auth');
-app.use('/auth', authRoutes);
+
 
 app.get('/health', (_, res) => res.json({ ok: true }));
 
@@ -22,6 +20,13 @@ app.get('/db-check', async (_, res) => {
     res.status(500).json({ error: 'DB connection failed' });
   }
 });
+// routen
+const authRoutes = require('./auth');
+app.use('/auth', authRoutes);
+
+const techRoutes = require('./technologies');
+app.use('/tech', techRoutes);
+
 
 // server start
 app.listen(process.env.PORT, () => {
