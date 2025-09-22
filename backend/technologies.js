@@ -22,7 +22,6 @@ function authenticate(req, res, next) {
 }
 
 // 👉 1. Neue Technologie erfassen
-// 👉 1. Neue Technologie erfassen
 router.post('/', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Only CTO/Tech-Lead can add technologies' });
@@ -48,8 +47,6 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-
-// 👉 2. Publizierte Technologien anzeigen
 // 👉 2. Alle veröffentlichten Technologien auflisten
 router.get('/', async (_, res) => {
   try {
@@ -63,5 +60,112 @@ router.get('/', async (_, res) => {
   }
 });
 
+// 👉 3. Technologie publizieren
+router.put('/:id/publish', authenticate, async (req, res) => {
+  if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Only CTO/Tech-Lead can publish technologies' });
+  }
+
+  const { id } = req.params;
+  const { ring, rationale } = req.body;
+
+  if (!ring || !rationale) {
+    return res.status(400).json({ error: 'Ring and rationale are required to publish' });
+  }
+
+  try {
+    const result = await db.query(
+      `UPDATE technologies
+       SET ring = $1,
+           rationale = $2,
+           status = 'PUBLISHED',
+           published_at = NOW(),
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING *`,
+      [ring, rationale, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Technology not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not publish technology' });
+  }
+});
+
+// 👉 4. Technologie ändern (Update)
+router.put('/:id', authenticate, async (req, res) => {
+  if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Only CTO/Tech-Lead can update technologies' });
+  }
+
+  const { id } = req.params;
+  const { name, category, tech_description } = req.body;
+
+  if (!name || !category || !tech_description) {
+    return res.status(400).json({ error: 'Name, category and description are required' });
+  }
+
+  try {
+    const result = await db.query(
+      `UPDATE technologies
+       SET name = $1,
+           category = $2,
+           tech_description = $3,
+           updated_at = NOW()
+       WHERE id = $4
+       RETURNING *`,
+      [name, category, tech_description, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Technology not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not update technology' });
+  }
+});
+
+// 👉 5. Technologie-Einordnung ändern (Ring ändern)
+router.put('/:id/ring', authenticate, async (req, res) => {
+  if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Only CTO/Tech-Lead can change ring' });
+  }
+
+  const { id } = req.params;
+  const { ring, rationale } = req.body;
+
+  if (!ring || !rationale) {
+    return res.status(400).json({ error: 'Ring and rationale are required' });
+  }
+
+  try {
+    const result = await db.query(
+      `UPDATE technologies
+       SET ring = $1,
+           rationale = $2,
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING *`,
+      [ring, rationale, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Technology not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not change ring' });
+  }
+});
 
 module.exports = router;
