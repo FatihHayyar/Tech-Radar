@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TechList from "../components/TechList";
 import TechAdd from "../components/TechAdd";
-import AddUser from "../components/AddUser"; // ✅ sadece bu satır eklendi
+import AddUser from "../components/AddUser";
+import "./../styles/admin.css"; // <-- import admin css
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("technologies");
 
-  // ✅ sadece CTO / TECH_LEAD girebilsin
   useEffect(() => {
     const role = localStorage.getItem("role");
     const token = localStorage.getItem("token");
@@ -29,43 +29,50 @@ export default function AdminPage() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      {/* Sidebar */}
-      <div
-        style={{
-          width: "220px",
-          background: "#222",
-          color: "#fff",
-          padding: "1rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
-        <h2>Admin Panel</h2>
-        <button onClick={() => setActiveTab("technologies")}>
-          📦 Technologien
-        </button>
-        <button onClick={() => setActiveTab("add")}>
-          ➕ Neue Technologie
-        </button>
+    <div className="admin-layout">
+      {/* Sidebar / Topbar */}
+      <div className="admin-sidebar" role="navigation" aria-label="Admin navigation">
+        <div className="brand">
+          <h2>Admin Panel</h2>
+        </div>
 
-        {/* ---------- BURAYA TEK BUTON EKLENDİ ---------- */}
-        <button onClick={() => setActiveTab("addUser")}>
-          👤 Kullanıcı Ekle
-        </button>
-        {/* ---------------------------------------------- */}
+        <div className="nav-buttons">
+          <button
+            className={activeTab === "technologies" ? "active" : ""}
+            onClick={() => setActiveTab("technologies")}
+          >
+            📦 Technologien
+          </button>
 
-        <hr style={{ borderColor: "#444" }} />
-        <button onClick={handleLogout}>🚪 Logout</button>
+          <button
+            className={activeTab === "add" ? "active" : ""}
+            onClick={() => setActiveTab("add")}
+          >
+            ➕ Neue Technologie
+          </button>
+
+          <button
+            className={activeTab === "addUser" ? "active" : ""}
+            onClick={() => setActiveTab("addUser")}
+          >
+            👤 Kullanıcı Ekle
+          </button>
+        </div>
+
+        {/* logout container (desktop: bottom of sidebar, mobile: moved to top-right by CSS) */}
+        <div className="admin-footer">
+          <button className="logout-btn" onClick={handleLogout}>
+            🚪 Logout
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: "2rem" }}>
+      <main className="admin-main">
         {activeTab === "technologies" && <TechList />}
         {activeTab === "add" && <TechAdd />}
-        {activeTab === "addUser" && <AddUser />} {/* ve burada render ediliyor */}
-      </div>
+        {activeTab === "addUser" && <AddUser />}
+      </main>
     </div>
   );
 }

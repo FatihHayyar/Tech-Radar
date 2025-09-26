@@ -1,5 +1,8 @@
 const app = require('./app');
 
-app.listen(process.env.PORT, () => {
-  console.log('API listening on ' + process.env.PORT);
-});
+if (require.main === module) {
+  const port = process.env.PORT || 4000;
+  app.listen(port, () => {
+    console.log('API listening on ' + port);
+  });
+}

@@ -22,7 +22,7 @@ function authenticate(req, res, next) {
   }
 }
 
-// 👉 1. Neue Technologie erfassen
+// 👉 1. Neue Technologie erfassen (ring artık opsiyonel)
 router.post('/', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Only CTO/Tech-Lead can add technologies' });
@@ -30,8 +30,8 @@ router.post('/', authenticate, async (req, res) => {
 
   const { name, category, ring, description, rationale } = req.body;
 
-  if (!name || !category || !ring || !description) {
-    return res.status(400).json({ error: 'Name, category, ring, and description are required' });
+  if (!name || !category || !description) {
+    return res.status(400).json({ error: 'Name, category and description are required' });
   }
 
   try {
@@ -39,7 +39,7 @@ router.post('/', authenticate, async (req, res) => {
       `INSERT INTO technologies (name, category, ring, tech_description, rationale, status, created_at, created_by)
        VALUES ($1, $2, $3, $4, $5, 'DRAFT', NOW(), $6)
        RETURNING *`,
-      [name, category, ring, description, rationale || null, req.user.id]
+      [name, category, ring || null, description, rationale || null, req.user.id]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -48,7 +48,6 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// 👉 Admin: Tüm teknolojileri getir (auth gerekli)
 // 👉 Admin: Tüm teknolojileri getir (auth gerekli)
 router.get('/all', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
@@ -68,7 +67,6 @@ router.get('/all', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Could not fetch all technologies' });
   }
 });
-
 
 // 👉 2. Alle veröffentlichten Technologien auflisten
 router.get('/', async (_, res) => {
@@ -116,21 +114,21 @@ router.put('/:id/publish', authenticate, async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Could not publish technology' });
+    res.status(500).json({ error: 'Technology could not be published' });
   }
 });
 
-// 👉 4. Technologie ändern (Update)
+// 👉 4. Technologie ändern
 router.put('/:id', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Only CTO/Tech-Lead can update technologies' });
   }
 
   const { id } = req.params;
-  const { name, category, ring, tech_description, rationale } = req.body;
+  const { name, category, description } = req.body;
 
-  if (!name || !category || !ring || !tech_description) {
-    return res.status(400).json({ error: 'Name, category, ring and description are required' });
+  if (!name || !category || !description) {
+    return res.status(400).json({ error: 'Name, category and description are required' });
   }
 
   try {
@@ -138,13 +136,11 @@ router.put('/:id', authenticate, async (req, res) => {
       `UPDATE technologies
        SET name = $1,
            category = $2,
-           ring = $3,
-           tech_description = $4,
-           rationale = $5,
+           tech_description = $3,
            updated_at = NOW()
-       WHERE id = $6
+       WHERE id = $4
        RETURNING *`,
-      [name, category, ring, tech_description, rationale || null, id]
+      [name, category, description, id]
     );
 
     if (result.rows.length === 0) {
@@ -154,7 +150,42 @@ router.put('/:id', authenticate, async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Could not update technology' });
+    res.status(500).json({ error: 'Technology could not be updated' });
+  }
+});
+
+// 👉 5. Technologie-Einordnung ändern (Ring / Rationale)
+router.put('/:id/reclassify', authenticate, async (req, res) => {
+  if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Only CTO/Tech-Lead can reclassify technologies' });
+  }
+
+  const { id } = req.params;
+  const { ring, rationale } = req.body;
+
+  if (!ring || !rationale) {
+    return res.status(400).json({ error: 'Ring and rationale are required' });
+  }
+
+  try {
+    const result = await db.query(
+      `UPDATE technologies
+       SET ring = $1,
+           rationale = $2,
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING *`,
+      [ring, rationale, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Technology not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Technology could not be reclassified' });
   }
 });
 

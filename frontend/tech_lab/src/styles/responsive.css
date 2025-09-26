@@ -1,0 +1,65 @@
+/* src/styles/responsive.css - hızlı mobile düzeltme */
+
+/* Küçük ekranlarda sidebar gizle ve içerik genişlesin */
+@media (max-width: 900px) {
+  .sidebar { display: none !important; }
+  /* Eğer AdminPage içindeki main container'a class eklersen şu seçiciyi kullan:
+     .main-content { padding: 1rem; width: 100%; } 
+     biz TechList'te table-wrap kullanıyoruz */
+}
+
+/* Table horizontal scroll: mobilde tablo overflow ile taşmaz, kullanıcı kaydırır */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
+}
+
+/* Tabloya en az bir min-width ver (masaüstü görünümü bozulmasın) */
+.table-wrap table {
+  min-width: 700px; /* ihtiyaca göre düşürebilirsin, örn 600 */
+  width: 100%;
+  border-collapse: collapse;
+}
+/* Kart görünümü - küçük ekran */
+@media (max-width: 420px) {
+  /* table -> blok elemanlara dönüştür */
+  .table-wrap table,
+  .table-wrap thead,
+  .table-wrap tbody,
+  .table-wrap th,
+  .table-wrap td,
+  .table-wrap tr {
+    display: block;
+  }
+
+  .table-wrap thead { display: none; } /* başlık gizle */
+
+  .table-wrap tr {
+    border: 1px solid #eee;
+    margin: 0 0 12px 0;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .table-wrap td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+  }
+
+  /* solda label (data-label), sağda değer */
+  .table-wrap td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #444;
+    margin-right: 8px;
+    flex: 0 0 45%;
+  }
+  .table-wrap td > * {
+    flex: 1 1 auto;
+    text-align: right;
+  }
+}

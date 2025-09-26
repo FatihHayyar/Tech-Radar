@@ -1,0 +1,165 @@
+.techlist-root {
+  font-family: sans-serif;
+  color: #111;
+}
+
+.techlist-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.techlist-search {
+  flex: 1;
+  padding: 0.25rem;
+  min-width: 140px;
+}
+
+/* Table wrap */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+}
+
+/* Masaüstü tablo */
+.tech-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.tech-table th,
+.tech-table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.tech-table button {
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Detay kutusu */
+.detail-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #aaa;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+/* Edit box */
+.edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Masaüstü/mobil ayrımı */
+.desktop-only { display: table-row; }
+.mobile-only { display: none; }
+
+/* ------- RESPONSIVE ------- */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .tech-table {
+    min-width: 700px;
+    table-layout: auto;
+  }
+}
+
+/* Mobil */
+@media (max-width: 480px) {
+  .techlist-controls { padding-right: 0.5rem; }
+
+  .tech-table,
+  .tech-table thead,
+  .tech-table tbody,
+  .tech-table th,
+  .tech-table td,
+  .tech-table tr {
+    display: block;
+  }
+
+  .tech-table thead {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .tech-table tr {
+    border: 1px solid #e6e6e6;
+    margin-bottom: 0.7rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+  }
+
+  .tech-table td {
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    display: block;
+    padding: 8px 12px;
+    white-space: normal;
+  }
+
+  .tech-table td:before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #333;
+  }
+
+  .tech-table td:last-child {
+    border-bottom: none;
+  }
+
+  .tech-table button {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+
+  /* edit box görünür kalsın */
+  .edit-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0.5rem;
+  }
+
+  /* mobilde masaüstü detay row gizle, div göster */
+  .desktop-only { display: none; }
+  .mobile-only { display: block; margin: 0.5rem 0; }
+
+  .detail-box { padding: 0.75rem; }
+}
+
+/* Çok küçük ekran */
+@media (max-width: 360px) {
+  .tech-table tbody tr td[data-label]::before {
+    width: 95px;
+    font-size: 0.95em;
+  }
+  .tech-table tbody tr { padding: 8px; }
+}

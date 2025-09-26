@@ -2,17 +2,24 @@ const request = require('supertest');
 const app = require('../app');
 const db = require('../db');
 
-let token;
+let ctoToken;
+let empToken;
 
 beforeAll(async () => {
-  // CTO ile login
+  // cleanup önce
+  await db.query("DELETE FROM users WHERE email = 'employee2@test.com'");
+
+  // CTO login
   const res = await request(app)
     .post('/auth/login')
     .send({ email: process.env.TEST_EMAIL, password: process.env.TEST_PASSWORD });
-  token = res.body.token;
+  ctoToken = res.body.token;
 
-  // test user cleanup (önceki run’lardan kalan varsa)
-  await db.query("DELETE FROM users WHERE email = 'employee2@test.com'");
+  // Employee (probe@test.com) login
+  const empRes = await request(app)
+    .post('/auth/login')
+    .send({ email: 'probe@test.com', password: '111111' });
+  empToken = empRes.body.token;
 });
 
 afterAll(async () => {
@@ -23,9 +30,9 @@ describe('Users API', () => {
   it('CTO should create new EMPLOYEE user', async () => {
     const res = await request(app)
       .post('/users')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${ctoToken}`)
       .send({
-        email: 'employee2@test.com',   // ✅ aynı email her iki testte
+        email: 'employee2@test.com',
         password: 'test123',
         role: 'EMPLOYEE'
       });
@@ -33,23 +40,15 @@ describe('Users API', () => {
     expect(res.body.role).toBe('EMPLOYEE');
   });
 
-  it('User should change own password', async () => {
-    // önce employee2 login yap
-    const loginRes = await request(app)
-      .post('/auth/login')
-      .send({ email: 'employee2@test.com', password: 'test123' });
-
-    expect(loginRes.statusCode).toBe(200);
-    const empToken = loginRes.body.token;
-
+  it('EMPLOYEE cannot create a new user', async () => {
     const res = await request(app)
-      .put('/users/me/password')
+      .post('/users')
       .set('Authorization', `Bearer ${empToken}`)
       .send({
-        oldPassword: 'test123',
-        newPassword: 'newpass123'
+        email: 'illegal@test.com',
+        password: 'test123',
+        role: 'EMPLOYEE'
       });
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain('erfolgreich');
+    expect(res.statusCode).toBe(403);
   });
 });
