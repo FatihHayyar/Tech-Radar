@@ -1,93 +1,182 @@
-/* Admin layout responsive CSS */
-
-.admin-layout {
- display: grid;
-  grid-template-columns: 220px 1fr;
+/* === TechList Table === */
+.techlist-root {
   width: 100%;
-  min-height: 100vh;
 }
 
-/* Sidebar */
-.admin-sidebar {
-  background: #222;
-  color: #fff;
-  padding: 1rem;
+.techlist-controls {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.admin-sidebar .brand h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.2rem;
-  color: #fff;
-  text-align: left;
-}
-
-.admin-sidebar .nav-buttons {
+.control-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-.admin-sidebar button {
-  background: #f2f2f2;
-  color: #111;
-  border: none;
-  padding: 0.5rem 0.6rem;
-  border-radius: 6px;
-  cursor: pointer;
-  text-align: left;
-}
-.admin-sidebar button.active {
-  background: #fff;
-  color: #222;
-  font-weight: 600;
+.techlist-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.4rem;
 }
 
-/* logout */
-.admin-footer {
-  margin-top: 1rem;
-}
-.logout-btn {
-  background: #ffe6e6;
-  color: #900;
-  border: 1px solid #ddaaaa;
-  padding: 0.45rem 0.8rem;
-  border-radius: 6px;
-}
-
-/* İçerik */
-.admin-main {
+.table-wrap {
   width: 100%;
-  padding: 2rem;
-  box-sizing: border-box;
   overflow-x: auto;
 }
 
-/* Responsive: sidebar üst bar olsun */
-@media (max-width: 900px) {
-  .admin-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.tech-table th,
+.tech-table td {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.tech-table th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.tech-row:hover {
+  background: #fafafa;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.actions button:first-child {
+  background: #2980b9;
+  color: #fff;
+}
+
+.actions button:first-child:hover {
+  background: #3498db;
+}
+
+.actions button:last-child {
+  background: #27ae60;
+  color: #fff;
+}
+
+.actions button:last-child:hover {
+  background: #2ecc71;
+}
+
+/* Edit Box */
+.edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-actions button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-actions button:first-child {
+  background: #2980b9;
+  color: #fff;
+}
+
+.edit-actions button:nth-child(2) {
+  background: #27ae60;
+  color: #fff;
+}
+
+.edit-actions button:last-child {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* Detail Box */
+.detail-box {
+  background: #fafafa;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .techlist-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .tech-table,
+  .tech-table thead,
+  .tech-table tbody,
+  .tech-table th,
+  .tech-table td,
+  .tech-table tr {
+    display: block;
   }
 
-  .admin-sidebar {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
+  .tech-table thead {
+    display: none;
+  }
+
+  .tech-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
     padding: 0.5rem;
+    background: #fff;
   }
 
-  .admin-sidebar .nav-buttons {
-    flex: 1;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+  .tech-table td {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
   }
 
-  .admin-footer {
-    margin-left: auto;
+  .tech-table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-right: 0.5rem;
+    color: #333;
+  }
+}
+
+@media (max-width: 360px) {
+  .techlist-controls {
+    gap: 0.5rem;
+  }
+
+  .techlist-search {
+    min-width: 120px;
+  }
+
+  .tech-table td {
+    font-size: 0.85rem;
   }
 }

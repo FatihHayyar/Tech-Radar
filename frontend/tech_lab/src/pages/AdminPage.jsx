@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TechList from "../components/TechList";
 import TechAdd from "../components/TechAdd";
-import AddUser from "../components/AddUser";
-import "./../styles/admin.css"; // <-- import admin css
+import "./../styles/admin.css";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -13,11 +12,11 @@ export default function AdminPage() {
     const role = localStorage.getItem("role");
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/"); // login yoksa
+      navigate("/");
       return;
     }
     if (role !== "CTO" && role !== "TECH_LEAD") {
-      navigate("/tech"); // employee admin'e girmesin
+      navigate("/tech");
     }
   }, [navigate]);
 
@@ -30,8 +29,7 @@ export default function AdminPage() {
 
   return (
     <div className="admin-layout">
-      {/* Sidebar / Topbar */}
-      <div className="admin-sidebar" role="navigation" aria-label="Admin navigation">
+      <div className="admin-sidebar">
         <div className="brand">
           <h2>Admin Panel</h2>
         </div>
@@ -45,21 +43,20 @@ export default function AdminPage() {
           </button>
 
           <button
+            className={activeTab === "drafts" ? "active" : ""}
+            onClick={() => setActiveTab("drafts")}
+          >
+            📝 Entwürfe
+          </button>
+
+          <button
             className={activeTab === "add" ? "active" : ""}
             onClick={() => setActiveTab("add")}
           >
             ➕ Neue Technologie
           </button>
-
-          <button
-            className={activeTab === "addUser" ? "active" : ""}
-            onClick={() => setActiveTab("addUser")}
-          >
-            👤 Kullanıcı Ekle
-          </button>
         </div>
 
-        {/* logout container (desktop: bottom of sidebar, mobile: moved to top-right by CSS) */}
         <div className="admin-footer">
           <button className="logout-btn" onClick={handleLogout}>
             🚪 Logout
@@ -67,11 +64,16 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="admin-main">
-        {activeTab === "technologies" && <TechList />}
-        {activeTab === "add" && <TechAdd />}
-        {activeTab === "addUser" && <AddUser />}
+        {activeTab === "technologies" && <TechList onlyPublished />}
+        {activeTab === "drafts" && <TechList onlyDrafts />}
+        {activeTab === "add" && (
+          <TechAdd
+            onSuccess={() => {
+              setActiveTab("drafts"); // 🔥 kayıt sonrası Entwürfe sekmesine geç
+            }}
+          />
+        )}
       </main>
     </div>
   );

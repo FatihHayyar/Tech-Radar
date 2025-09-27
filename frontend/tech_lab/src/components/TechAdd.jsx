@@ -1,48 +1,64 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-export default function TechAdd() {
+export default function TechAdd({ onSuccess }) {
   const [form, setForm] = useState({
     name: "",
-    category: "Tools",
-    ring: "Assess",
+    category: "",
+    ring: "",
     description: "",
     rationale: "",
   });
-
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await fetch("http://localhost:4000/tech", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("token"),
-      },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      alert("✅ Teknoloji eklendi!");
-      // 👉 direkt admin menüye yönlendir
-      window.location.href = "/admin";
-    } else {
-      alert("❌ Hata: " + data.error);
+    if (!form.name || !form.category || !form.description) {
+      alert("⚠️ Name, Kategorie und Beschreibung sind Pflichtfelder!");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("Sunucuya bağlanılamadı.");
-  }
-};
 
+    try {
+      const res = await fetch("http://localhost:4000/tech", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+        body: JSON.stringify({
+          name: form.name,
+          category: form.category,
+          description: form.description,
+          ring: form.ring || null,
+          rationale: form.rationale || null,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Technologie wurde als Entwurf gespeichert!");
+        setForm({
+          name: "",
+          category: "",
+          ring: "",
+          description: "",
+          rationale: "",
+        });
+
+        if (onSuccess) {
+          onSuccess(); // 🔥 AdminPage'e haber ver → drafts tabına geç
+        }
+      } else {
+        alert("❌ Fehler: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("⚠️ Verbindung zum Server fehlgeschlagen.");
+    }
+  };
 
   return (
     <form
@@ -51,37 +67,53 @@ export default function TechAdd() {
     >
       <input
         name="name"
-        placeholder="Teknoloji adı"
+        placeholder="Technologie-Name"
         value={form.name}
         onChange={handleChange}
         required
       />
-      <select name="category" value={form.category} onChange={handleChange}>
-        <option>Tools</option>
-        <option>Techniques</option>
-        <option>Platforms</option>
-        <option>Languages & Frameworks</option>
+
+      <select
+        name="category"
+        value={form.category}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Kategorie wählen...</option>
+        <option value="Tools">Tools</option>
+        <option value="Techniques">Techniques</option>
+        <option value="Platforms">Platforms</option>
+        <option value="Languages & Frameworks">Languages & Frameworks</option>
       </select>
-      <select name="ring" value={form.ring} onChange={handleChange}>
-        <option>Assess</option>
-        <option>Trial</option>
-        <option>Adopt</option>
-        <option>Hold</option>
+
+      <select
+        name="ring"
+        value={form.ring}
+        onChange={handleChange}
+      >
+        <option value="">(Optional) Ring wählen...</option>
+        <option value="Assess">Assess</option>
+        <option value="Trial">Trial</option>
+        <option value="Adopt">Adopt</option>
+        <option value="Hold">Hold</option>
       </select>
+
       <textarea
         name="description"
-        placeholder="Açıklama"
+        placeholder="Beschreibung (Pflichtfeld)"
         value={form.description}
         onChange={handleChange}
         required
       />
+
       <textarea
         name="rationale"
-        placeholder="Rationale"
+        placeholder="(Optional) Rationale"
         value={form.rationale}
         onChange={handleChange}
       />
-      <button type="submit">➕ Kaydet</button>
+
+      <button type="submit">➕ Speichern</button>
     </form>
   );
 }

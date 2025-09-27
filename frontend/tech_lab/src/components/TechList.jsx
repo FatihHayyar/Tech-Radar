@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./../styles/techlist.css";
 
-export default function TechList({ reload, onlyPublished = false }) {
+export default function TechList({ reload, onlyPublished = false, onlyDrafts = false }) {
   const [techs, setTechs] = useState([]);
   const [filterCategory, setFilterCategory] = useState("ALL");
-  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [filterRing, setFilterRing] = useState("ALL");
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -31,42 +31,65 @@ export default function TechList({ reload, onlyPublished = false }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reload]);
 
-  const filteredTechs = techs.filter((t) => {
-    const matchesCategory =
-      filterCategory === "ALL" || t.category === filterCategory;
-    const matchesStatus = filterStatus === "ALL" || t.status === filterStatus;
-    const searchText = (search || "").toLowerCase();
-    const matchesSearch =
-      (t.name || "").toLowerCase().includes(searchText) ||
-      (t.category || "").toLowerCase().includes(searchText) ||
-      (t.ring || "").toLowerCase().includes(searchText);
-    return matchesCategory && matchesStatus && matchesSearch;
-  });
+  const filteredTechs = techs
+    .filter((t) => {
+      const matchesCategory =
+        filterCategory === "ALL" || t.category === filterCategory;
+      const matchesRing = filterRing === "ALL" || t.ring === filterRing;
+      const searchText = (search || "").toLowerCase();
+      const matchesSearch =
+        (t.name || "").toLowerCase().includes(searchText) ||
+        (t.category || "").toLowerCase().includes(searchText) ||
+        (t.ring || "").toLowerCase().includes(searchText);
+      return matchesCategory && matchesRing && matchesSearch;
+    })
+    .filter((t) => {
+      if (onlyPublished) return t.status === "PUBLISHED";
+      if (onlyDrafts) return t.status === "DRAFT";
+      return true;
+    });
 
   const handleEdit = (tech) => {
     setEditId(tech.id);
-    setEditData({ ...tech });
+    setEditData({ ...tech, originalRing: tech.ring });
   };
 
   const handleSave = async () => {
+    if (!editData.name || !editData.category || !editData.tech_description) {
+      alert("⚠️ Name, Kategorie und Beschreibung sind Pflichtfelder!");
+      return;
+    }
+
+    let url = `${import.meta.env.VITE_API_URL}/tech/${editId}`;
+    let body = null;
+
+    if (editData.ring !== editData.originalRing) {
+      if (!editData.rationale) {
+        alert("⚠️ Bitte eine Begründung (Rationale) angeben, wenn der Ring geändert wird!");
+        return;
+      }
+      url = `${import.meta.env.VITE_API_URL}/tech/${editId}/reclassify`;
+      body = JSON.stringify({
+        ring: editData.ring,
+        rationale: editData.rationale,
+      });
+    } else {
+      body = JSON.stringify({
+        name: editData.name,
+        category: editData.category,
+        description: editData.tech_description,
+      });
+    }
+
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/tech/${editId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: editData.name,
-            category: editData.category,
-            ring: editData.ring,
-            tech_description: editData.tech_description,
-            rationale: editData.rationale,
-          }),
-        }
-      );
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body,
+      });
 
       if (res.ok) {
         alert("✅ Technologie aktualisiert!");
@@ -74,20 +97,24 @@ export default function TechList({ reload, onlyPublished = false }) {
         fetchTechs();
       } else {
         const err = await res.json();
-        alert("❌ " + err.error);
+        alert("❌ Fehler: " + (err.error || err.message || JSON.stringify(err)));
       }
     } catch (err) {
-      alert("⚠️ Update fehlgeschlagen");
+      alert("⚠️ Update fehlgeschlagen: " + err.message);
     }
   };
 
-  const handlePublish = async (id) => {
-    if (!window.confirm("📢 Diese Technologie wirklich veröffentlichen?"))
+  const handlePublish = async (tech) => {
+    if (!tech.ring || !tech.rationale) {
+      alert("⚠️ Bitte Ring und Rationale ausfüllen, bevor publiziert werden kann!");
       return;
+    }
+
+    if (!window.confirm("📢 Diese Technologie wirklich veröffentlichen?")) return;
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/tech/${id}/publish`,
+        `${import.meta.env.VITE_API_URL}/tech/${tech.id}/publish`,
         {
           method: "PUT",
           headers: {
@@ -95,22 +122,23 @@ export default function TechList({ reload, onlyPublished = false }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            ring: editData.ring || "Trial",
-            rationale: editData.rationale || "Publiziert durch Admin",
+            ring: tech.ring,
+            rationale: tech.rationale,
           }),
         }
       );
 
       if (res.ok) {
         alert("✅ Technologie publiziert!");
+        setEditId(null);
         fetchTechs();
       } else {
         const data = await res.json();
-        alert("❌ Fehler: " + data.error);
+        alert("❌ Fehler: " + (data.error || data.message || JSON.stringify(data)));
       }
     } catch (err) {
       console.error(err);
-      alert("⚠️ Publish fehlgeschlagen");
+      alert("⚠️ Publish fehlgeschlagen: " + err.message);
     }
   };
 
@@ -136,19 +164,19 @@ export default function TechList({ reload, onlyPublished = false }) {
           </select>
         </label>
 
-        {!onlyPublished && (
-          <label className="control-item">
-            Status:&nbsp;
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="ALL">Alle</option>
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-            </select>
-          </label>
-        )}
+        <label className="control-item">
+          Ring:&nbsp;
+          <select
+            value={filterRing}
+            onChange={(e) => setFilterRing(e.target.value)}
+          >
+            <option value="ALL">Alle</option>
+            <option value="Assess">Assess</option>
+            <option value="Trial">Trial</option>
+            <option value="Adopt">Adopt</option>
+            <option value="Hold">Hold</option>
+          </select>
+        </label>
 
         <input
           className="techlist-search control-item"
@@ -168,7 +196,7 @@ export default function TechList({ reload, onlyPublished = false }) {
               <th>Kategorie</th>
               <th>Ring</th>
               <th>Status</th>
-              {!onlyPublished && <th>Aktionen</th>}
+              <th>Aktionen</th>
             </tr>
           </thead>
 
@@ -177,12 +205,14 @@ export default function TechList({ reload, onlyPublished = false }) {
               <React.Fragment key={t.id}>
                 <tr
                   className="tech-row"
-                  onClick={() =>
-                    setExpandedId(expandedId === t.id ? null : t.id)
-                  }
+                  onClick={() => {
+                    if (editId !== t.id) {
+                      setExpandedId(expandedId === t.id ? null : t.id);
+                    }
+                  }}
                 >
                   {editId === t.id ? (
-                    <td colSpan={onlyPublished ? 4 : 5}>
+                    <td colSpan={5}>
                       <div className="edit-box">
                         <input
                           placeholder="Name"
@@ -208,7 +238,7 @@ export default function TechList({ reload, onlyPublished = false }) {
                         </select>
 
                         <select
-                          value={editData.ring}
+                          value={editData.ring || ""}
                           onChange={(e) =>
                             setEditData({
                               ...editData,
@@ -216,6 +246,7 @@ export default function TechList({ reload, onlyPublished = false }) {
                             })
                           }
                         >
+                          <option value="">Ring wählen...</option>
                           <option>Assess</option>
                           <option>Trial</option>
                           <option>Adopt</option>
@@ -234,7 +265,7 @@ export default function TechList({ reload, onlyPublished = false }) {
                         />
 
                         <textarea
-                          placeholder="Rationale (optional)"
+                          placeholder="Rationale (Pflicht wenn Ring geändert)"
                           value={editData.rationale || ""}
                           onChange={(e) =>
                             setEditData({
@@ -246,6 +277,11 @@ export default function TechList({ reload, onlyPublished = false }) {
 
                         <div className="edit-actions">
                           <button onClick={handleSave}>💾 Speichern</button>
+                          {t.status === "DRAFT" && (
+                            <button onClick={() => handlePublish(t)}>
+                              📢 Publish
+                            </button>
+                          )}
                           <button onClick={() => setEditId(null)}>
                             ❌ Abbrechen
                           </button>
@@ -259,38 +295,36 @@ export default function TechList({ reload, onlyPublished = false }) {
                       <td data-label="Ring">{t.ring}</td>
                       <td data-label="Status">{t.status}</td>
 
-                      {!onlyPublished && (
-                        <td data-label="Aktionen">
-                          <div className="actions">
+                      <td data-label="Aktionen">
+                        <div className="actions">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(t);
+                            }}
+                          >
+                            ✏️ Bearbeiten
+                          </button>
+                          {t.status === "DRAFT" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleEdit(t);
+                                handlePublish(t);
                               }}
                             >
-                              ✏️ Bearbeiten
+                              📢 Publish
                             </button>
-                            {t.status === "DRAFT" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePublish(t.id);
-                                }}
-                              >
-                                📢 Publish
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      )}
+                          )}
+                        </div>
+                      </td>
                     </>
                   )}
                 </tr>
 
-                {/* Masaüstü detay */}
+                {/* Desktop detail */}
                 {expandedId === t.id && (
                   <tr className="detail-row desktop-only">
-                    <td colSpan={onlyPublished ? 4 : 5}>
+                    <td colSpan={5}>
                       <div className="detail-box">
                         <h3>📌 {t.name}</h3>
                         <p><strong>Kategorie:</strong> {t.category}</p>
@@ -299,59 +333,6 @@ export default function TechList({ reload, onlyPublished = false }) {
                         <p><strong>Beschreibung:</strong> {t.tech_description || "-"}</p>
                         <p><strong>Rationale:</strong> {t.rationale || "-"}</p>
 
-                        {!onlyPublished && (
-                          <>
-                            <hr />
-                            <p>
-                              <strong>📅 Erstellt:</strong>{" "}
-                              {t.created_at
-                                ? new Date(t.created_at).toLocaleString()
-                                : "-"}
-                            </p>
-                            {t.updated_at && (
-                              <p>
-                                <strong>🔄 Geändert:</strong>{" "}
-                                {new Date(t.updated_at).toLocaleString()}
-                              </p>
-                            )}
-                            {t.published_at && (
-                              <p>
-                                <strong>🚀 Publiziert:</strong>{" "}
-                                {new Date(t.published_at).toLocaleString()}
-                              </p>
-                            )}
-                            <p>
-                              <strong>👤 Erstellt von:</strong>{" "}
-                              {t.created_by_email || t.created_by || "-"}
-                            </p>
-                          </>
-                        )}
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedId(null);
-                          }}
-                        >
-                          ❌ Schließen
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-
-                {/* Mobil detay */}
-                {expandedId === t.id && (
-                  <div className="detail-box mobile-only">
-                    <h3>📌 {t.name}</h3>
-                    <p><strong>Kategorie:</strong> {t.category}</p>
-                    <p><strong>Ring:</strong> {t.ring}</p>
-                    <p><strong>Status:</strong> {t.status}</p>
-                    <p><strong>Beschreibung:</strong> {t.tech_description || "-"}</p>
-                    <p><strong>Rationale:</strong> {t.rationale || "-"}</p>
-
-                    {!onlyPublished && (
-                      <>
                         <hr />
                         <p>
                           <strong>📅 Erstellt:</strong>{" "}
@@ -375,8 +356,53 @@ export default function TechList({ reload, onlyPublished = false }) {
                           <strong>👤 Erstellt von:</strong>{" "}
                           {t.created_by_email || t.created_by || "-"}
                         </p>
-                      </>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedId(null);
+                          }}
+                        >
+                          ❌ Schließen
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {/* Mobile detail */}
+                {expandedId === t.id && (
+                  <div className="detail-box mobile-only">
+                    <h3>📌 {t.name}</h3>
+                    <p><strong>Kategorie:</strong> {t.category}</p>
+                    <p><strong>Ring:</strong> {t.ring}</p>
+                    <p><strong>Status:</strong> {t.status}</p>
+                    <p><strong>Beschreibung:</strong> {t.tech_description || "-"}</p>
+                    <p><strong>Rationale:</strong> {t.rationale || "-"}</p>
+
+                    <hr />
+                    <p>
+                      <strong>📅 Erstellt:</strong>{" "}
+                      {t.created_at
+                        ? new Date(t.created_at).toLocaleString()
+                        : "-"}
+                    </p>
+                    {t.updated_at && (
+                      <p>
+                        <strong>🔄 Geändert:</strong>{" "}
+                        {new Date(t.updated_at).toLocaleString()}
+                      </p>
                     )}
+                    {t.published_at && (
+                      <p>
+                        <strong>🚀 Publiziert:</strong>{" "}
+                        {new Date(t.published_at).toLocaleString()}
+                      </p>
+                    )}
+                    <p>
+                      <strong>👤 Erstellt von:</strong>{" "}
+                      {t.created_by_email || t.created_by || "-"}
+                    </p>
 
                     <button onClick={() => setExpandedId(null)}>
                       ❌ Schließen

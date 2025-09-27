@@ -40,10 +40,14 @@ CREATE TABLE IF NOT EXISTS technologies (
   PRIMARY KEY (id)
 );
 
+-- Performance Index für Abfragen im Viewer
+CREATE INDEX IF NOT EXISTS idx_technologies_status_category_ring
+  ON technologies(status, category, ring);
+
 -- Standard-Benutzer (Passwörter: CTO -> 111111, TECH_LEAD -> test123, EMPLOYEE -> test123)
 INSERT INTO users (email, password_hash, role)
 VALUES
   ('cto@test.com',    '$2b$10$xRFpKpbfv0uDSoFkm1il6.JySMsAldVe/YRyeZ9R.XcPl.y2/K9Gu', 'CTO'),
   ('techlead@test.com','$2b$10$xRFpKpbfv0uDSoFkm1il6.JySMsAldVe/YRyeZ9R.XcPl.y2/K9Gu', 'TECH_LEAD'),
-  ('employee@test.com','$2b$10$xRFpKpbfv0uDSoFkm1il6.JySMsAldVe/YRyeZ9R.XcPl.y2/K9Gu', 'EMPLOYEE')
+  ('probe@test.com','$2b$10$xRFpKpbfv0uDSoFkm1il6.JySMsAldVe/YRyeZ9R.XcPl.y2/K9Gu', 'EMPLOYEE')
 ON CONFLICT (email) DO NOTHING;

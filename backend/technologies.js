@@ -23,6 +23,7 @@ function authenticate(req, res, next) {
 }
 
 // 👉 1. Neue Technologie erfassen (ring artık opsiyonel)
+// 👉 1. Neue Technologie erfassen (ring + rationale opsiyonel, her zaman DRAFT)
 router.post('/', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Only CTO/Tech-Lead can add technologies' });
@@ -30,8 +31,11 @@ router.post('/', authenticate, async (req, res) => {
 
   const { name, category, ring, description, rationale } = req.body;
 
+  // User Story 2 + 3: sadece bu üç alan zorunlu
   if (!name || !category || !description) {
-    return res.status(400).json({ error: 'Name, category and description are required' });
+    return res.status(400).json({
+      error: 'Name, category and description are required'
+    });
   }
 
   try {
@@ -47,6 +51,8 @@ router.post('/', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Technology could not be created' });
   }
 });
+
+
 
 // 👉 Admin: Tüm teknolojileri getir (auth gerekli)
 router.get('/all', authenticate, async (req, res) => {
@@ -68,7 +74,7 @@ router.get('/all', authenticate, async (req, res) => {
   }
 });
 
-// 👉 2. Alle veröffentlichten Technologien auflisten
+// 👉 6. Alle veröffentlichten Technologien auflisten
 router.get('/', async (_, res) => {
   try {
     const result = await db.query(
@@ -90,6 +96,7 @@ router.put('/:id/publish', authenticate, async (req, res) => {
   const { id } = req.params;
   const { ring, rationale } = req.body;
 
+  // US3: Publish sırasında ring + rationale zorunlu
   if (!ring || !rationale) {
     return res.status(400).json({ error: 'Ring and rationale are required to publish' });
   }
@@ -103,12 +110,13 @@ router.put('/:id/publish', authenticate, async (req, res) => {
            published_at = NOW(),
            updated_at = NOW()
        WHERE id = $3
+         AND status = 'DRAFT'
        RETURNING *`,
       [ring, rationale, id]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Technology not found' });
+      return res.status(404).json({ error: 'Draft technology not found or already published' });
     }
 
     res.json(result.rows[0]);
@@ -117,6 +125,7 @@ router.put('/:id/publish', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Technology could not be published' });
   }
 });
+
 
 // 👉 4. Technologie ändern
 router.put('/:id', authenticate, async (req, res) => {

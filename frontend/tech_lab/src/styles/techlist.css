@@ -1,61 +1,85 @@
+/* === TechList Table === */
 .techlist-root {
-  font-family: sans-serif;
-  color: #111;
+  width: 100%;
 }
 
 .techlist-controls {
-  margin-bottom: 1rem;
   display: flex;
-  gap: 1rem;
-  align-items: center;
   flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .techlist-search {
   flex: 1;
-  padding: 0.25rem;
-  min-width: 140px;
+  min-width: 180px;
+  padding: 0.4rem;
 }
 
-/* Table wrap */
 .table-wrap {
   width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 6px;
 }
 
-/* Masaüstü tablo */
 .tech-table {
-  border-collapse: collapse;
   width: 100%;
-  table-layout: fixed;
+  border-collapse: collapse;
+  background: #fff;
 }
 
 .tech-table th,
 .tech-table td {
-  padding: 8px;
+  padding: 0.8rem;
   border: 1px solid #ddd;
   text-align: left;
-  word-wrap: break-word;
 }
 
-.tech-table button {
-  padding: 6px 8px;
-  font-size: 0.95rem;
+.tech-table th {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.tech-row:hover {
+  background: #fafafa;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions button {
+  padding: 0.4rem 0.8rem;
+  border: none;
   cursor: pointer;
+  border-radius: 4px;
 }
 
-/* Detay kutusu */
-.detail-box {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid #aaa;
-  background: #f9f9f9;
-  border-radius: 6px;
+.actions button:first-child {
+  background: #2980b9;
+  color: #fff;
 }
 
-/* Edit box */
+.actions button:first-child:hover {
+  background: #3498db;
+}
+
+.actions button:last-child {
+  background: #27ae60;
+  color: #fff;
+}
+
+.actions button:last-child:hover {
+  background: #2ecc71;
+}
+
+/* Edit Box */
 .edit-box {
   display: flex;
   flex-direction: column;
@@ -65,33 +89,48 @@
 .edit-actions {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.5rem;
 }
 
-.actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.edit-actions button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
 }
 
-/* Masaüstü/mobil ayrımı */
-.desktop-only { display: table-row; }
-.mobile-only { display: none; }
+.edit-actions button:first-child {
+  background: #2980b9;
+  color: #fff;
+}
 
-/* ------- RESPONSIVE ------- */
+.edit-actions button:nth-child(2) {
+  background: #27ae60;
+  color: #fff;
+}
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .tech-table {
-    min-width: 700px;
-    table-layout: auto;
+.edit-actions button:last-child {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* Detail Box */
+.detail-box {
+  background: #fafafa;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .techlist-controls {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
-/* Mobil */
 @media (max-width: 480px) {
-  .techlist-controls { padding-right: 0.5rem; }
-
   .tech-table,
   .tech-table thead,
   .tech-table tbody,
@@ -99,67 +138,61 @@
   .tech-table td,
   .tech-table tr {
     display: block;
+    width: 100%;
   }
 
   .tech-table thead {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
+    display: none;
   }
 
   .tech-table tr {
-    border: 1px solid #e6e6e6;
-    margin-bottom: 0.7rem;
-    padding: 0.5rem;
-    background: white;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
     border-radius: 6px;
+    padding: 0.5rem;
+    background: #fff;
   }
 
   .tech-table td {
     border: none;
-    border-bottom: 1px solid #f0f0f0;
-    display: block;
-    padding: 8px 12px;
-    white-space: normal;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.4rem 0.6rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .tech-table td:before {
+  .tech-table td::before {
     content: attr(data-label);
-    display: block;
-    font-weight: 700;
-    margin-bottom: 6px;
+    font-weight: bold;
+    margin-right: 0.5rem;
     color: #333;
+    flex-shrink: 0;
   }
 
-  .tech-table td:last-child {
-    border-bottom: none;
-  }
-
-  .tech-table button {
-    padding: 6px 10px;
-    font-size: 0.95rem;
-  }
-
-  /* edit box görünür kalsın */
-  .edit-box {
-    background: #fff;
+  /* ✅ Mobilde detail box tam genişlikte */
+  .detail-box.mobile-only {
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 1rem;
+    box-sizing: border-box;
+    background: #fafafa;
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding: 0.5rem;
   }
-
-  /* mobilde masaüstü detay row gizle, div göster */
-  .desktop-only { display: none; }
-  .mobile-only { display: block; margin: 0.5rem 0; }
-
-  .detail-box { padding: 0.75rem; }
 }
 
-/* Çok küçük ekran */
 @media (max-width: 360px) {
-  .tech-table tbody tr td[data-label]::before {
-    width: 95px;
-    font-size: 0.95em;
+  .techlist-controls {
+    gap: 0.5rem;
   }
-  .tech-table tbody tr { padding: 8px; }
+
+  .techlist-search {
+    min-width: 120px;
+  }
+
+  .tech-table td {
+    font-size: 0.85rem;
+  }
 }

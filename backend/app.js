@@ -123,8 +123,7 @@ app.use('/tech', techRoutes);
 const { router: authRoutes } = require('./auth');
 app.use('/auth', authRoutes);
 
-const userRoutes = require('./users');
-app.use('/users', userRoutes);
+// ❌ users.js kaldırıldı, buradaki import da silindi
 
 // ---- Graceful shutdown helpers (useful during tests / dev) ----
 // Exported app will be used by server.js which calls app.listen; to help tests exit cleanly,

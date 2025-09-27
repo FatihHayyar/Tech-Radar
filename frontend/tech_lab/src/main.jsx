@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';   // 🔥 eksik olan import eklendi
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
-import './styles/responsive.css';
+
 
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const TechPage = React.lazy(() => import('./pages/TechPage'));
