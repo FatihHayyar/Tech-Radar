@@ -129,7 +129,9 @@ Routen:
 Backend
 
 cd backend
+
 npm test
+
 Die Tests prüfen u.a. Login, Technologie-Endpoints und Rollentrennung.
 
 Frontend
@@ -151,7 +153,9 @@ Sämtliche Anmeldungen werden im Backend protokolliert.
 Funktionalitäten sind durch automatisierte Unit- und Integrationstests abgedeckt.
 
 ### 9. Dokumentation
-arc42 Architekturdokumentation
+- [arc42 Architekturdokumentation](docs/arc42.md)
+- [Arbeitsjournal](docs/arbeitsjournal.md)
+- [Fazit & Reflexion](docs/reflexion.md)
 
 
 Hinweis
