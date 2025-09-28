@@ -1,40 +1,40 @@
-// technologies.js
+// routes/technologies.js
+// Routen für Verwaltung und Anzeige von Technologien
+
 const express = require('express');
-const db = require('./db');
+const db = require('../db');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-// Middleware: Auth check
+// Middleware: Authentifizierung
 function authenticate(req, res, next) {
   const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'Missing token' });
+  if (!authHeader) return res.status(401).json({ error: 'Kein Token bereitgestellt' });
 
   const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Invalid token' });
+  if (!token) return res.status(401).json({ error: 'Ungültiges Token' });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // id + role
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    return res.status(401).json({ error: 'Ungültiges oder abgelaufenes Token' });
   }
 }
 
-// 👉 1. Neue Technologie erfassen (ring artık opsiyonel)
-// 👉 1. Neue Technologie erfassen (ring + rationale opsiyonel, her zaman DRAFT)
+// 1. Neue Technologie erfassen (Ring + Rationale optional, immer als DRAFT gespeichert)
 router.post('/', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Only CTO/Tech-Lead can add technologies' });
+    return res.status(403).json({ error: 'Nur CTO/Tech-Lead dürfen Technologien hinzufügen' });
   }
 
   const { name, category, ring, description, rationale } = req.body;
 
-  // User Story 2 + 3: sadece bu üç alan zorunlu
   if (!name || !category || !description) {
     return res.status(400).json({
-      error: 'Name, category and description are required'
+      error: 'Name, Kategorie und Beschreibung sind erforderlich'
     });
   }
 
@@ -48,16 +48,14 @@ router.post('/', authenticate, async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Technology could not be created' });
+    res.status(500).json({ error: 'Technologie konnte nicht erstellt werden' });
   }
 });
 
-
-
-// 👉 Admin: Tüm teknolojileri getir (auth gerekli)
+// 2. Alle Technologien (Admin-Bereich)
 router.get('/all', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Only CTO/Tech-Lead can see all technologies' });
+    return res.status(403).json({ error: 'Nur CTO/Tech-Lead dürfen alle Technologien sehen' });
   }
 
   try {
@@ -70,11 +68,11 @@ router.get('/all', authenticate, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Could not fetch all technologies' });
+    res.status(500).json({ error: 'Alle Technologien konnten nicht geladen werden' });
   }
 });
 
-// 👉 6. Alle veröffentlichten Technologien auflisten
+// 3. Alle veröffentlichten Technologien (Viewer)
 router.get('/', async (_, res) => {
   try {
     const result = await db.query(
@@ -83,22 +81,21 @@ router.get('/', async (_, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Could not fetch technologies' });
+    res.status(500).json({ error: 'Veröffentlichte Technologien konnten nicht geladen werden' });
   }
 });
 
-// 👉 3. Technologie publizieren
+// 4. Technologie publizieren
 router.put('/:id/publish', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Only CTO/Tech-Lead can publish technologies' });
+    return res.status(403).json({ error: 'Nur CTO/Tech-Lead dürfen Technologien publizieren' });
   }
 
   const { id } = req.params;
   const { ring, rationale } = req.body;
 
-  // US3: Publish sırasında ring + rationale zorunlu
   if (!ring || !rationale) {
-    return res.status(400).json({ error: 'Ring and rationale are required to publish' });
+    return res.status(400).json({ error: 'Ring und Begründung sind erforderlich' });
   }
 
   try {
@@ -116,28 +113,27 @@ router.put('/:id/publish', authenticate, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Draft technology not found or already published' });
+      return res.status(404).json({ error: 'Entwurf nicht gefunden oder bereits publiziert' });
     }
 
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Technology could not be published' });
+    res.status(500).json({ error: 'Technologie konnte nicht publiziert werden' });
   }
 });
 
-
-// 👉 4. Technologie ändern
+// 5. Technologie ändern
 router.put('/:id', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Only CTO/Tech-Lead can update technologies' });
+    return res.status(403).json({ error: 'Nur CTO/Tech-Lead dürfen Technologien ändern' });
   }
 
   const { id } = req.params;
   const { name, category, description } = req.body;
 
   if (!name || !category || !description) {
-    return res.status(400).json({ error: 'Name, category and description are required' });
+    return res.status(400).json({ error: 'Name, Kategorie und Beschreibung sind erforderlich' });
   }
 
   try {
@@ -153,27 +149,27 @@ router.put('/:id', authenticate, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Technology not found' });
+      return res.status(404).json({ error: 'Technologie nicht gefunden' });
     }
 
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Technology could not be updated' });
+    res.status(500).json({ error: 'Technologie konnte nicht geändert werden' });
   }
 });
 
-// 👉 5. Technologie-Einordnung ändern (Ring / Rationale)
+// 6. Technologie-Einordnung ändern (Ring / Begründung)
 router.put('/:id/reclassify', authenticate, async (req, res) => {
   if (!['CTO', 'TECH_LEAD'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Only CTO/Tech-Lead can reclassify technologies' });
+    return res.status(403).json({ error: 'Nur CTO/Tech-Lead dürfen die Einordnung ändern' });
   }
 
   const { id } = req.params;
   const { ring, rationale } = req.body;
 
   if (!ring || !rationale) {
-    return res.status(400).json({ error: 'Ring and rationale are required' });
+    return res.status(400).json({ error: 'Ring und Begründung sind erforderlich' });
   }
 
   try {
@@ -188,13 +184,13 @@ router.put('/:id/reclassify', authenticate, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Technology not found' });
+      return res.status(404).json({ error: 'Technologie nicht gefunden' });
     }
 
     res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Technology could not be reclassified' });
+    res.status(500).json({ error: 'Technologie konnte nicht neu eingestuft werden' });
   }
 });
 

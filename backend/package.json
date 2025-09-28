@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend für das Technologie-Radar Projekt (Web Programming Lab)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,7 @@
     
   },
   "keywords": [],
-  "author": "",
+  "author": "Fatih Hayyar",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",

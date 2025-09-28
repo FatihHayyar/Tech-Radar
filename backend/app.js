@@ -1,13 +1,13 @@
-// app.js (optimized)
-// Small, safe performance improvements:
-// - gzip compression
-// - helmet security headers
-// - small in-memory cache for public GET /tech (published list)
-// - smaller body parser limit
-// - CORS configured via env (fallback to * for dev)
-// - X-Cache header to observe hits/misses
+// app.js (optimiert)
+// Kleine, sichere Performance-Verbesserungen:
+// - gzip-Kompression
+// - Helmet-Sicherheits-Header
+// - kleiner In-Memory-Cache für GET /tech (nur veröffentlichte Technologien)
+// - kleinere Body-Parser-Limits
+// - CORS über Umgebungsvariable konfigurierbar (Fallback * für Entwicklung)
+// - X-Cache Header zur Beobachtung von Hits/Misses
 //
-// Install extras if needed:
+// Zusätzliche Pakete falls notwendig installieren:
 //   npm install compression helmet
 //
 
@@ -16,13 +16,12 @@ const db = require('./db');
 const cors = require('cors');
 require('dotenv').config();
 
-// optional optimized middleware (install if missing)
+// optionale Middleware (läuft auch ohne installiert zu sein)
 let compression;
 let helmet;
 try {
   compression = require('compression');
 } catch (e) {
-  // if not installed, we'll skip compression but the app still runs
   compression = null;
 }
 try {
@@ -33,52 +32,39 @@ try {
 
 const app = express();
 
-// ---- Basic middleware ----
-// Enable gzip compression if available (improves transfer times)
+// ---- Basis-Middleware ----
+// Gzip-Kompression aktivieren (falls installiert)
 if (compression) {
   app.use(compression());
 }
 
-// Basic security headers
+// Sicherheits-Header setzen
 if (helmet) {
   app.use(helmet());
 }
 
-// Configure CORS: allow env-defined origin or all (development)
+// CORS: über ENV konfigurierbar, sonst Standard * (für Entwicklung)
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 app.use(cors({ origin: CORS_ORIGIN }));
 
-// Tighten JSON body size so huge payloads don't block event loop
+// JSON Body Limit enger setzen (gegen sehr große Payloads)
 app.use(express.json({ limit: process.env.JSON_LIMIT || '50kb' }));
 
-// small request logger for development (optional)
-// if you want to enable, install morgan and uncomment below
-// const morgan = require('morgan');
-// app.use(morgan('tiny'));
-
-// ---- Simple in-memory cache for public /tech GET (published list) ----
-// This caches the JSON response for GET /tech for a short TTL (seconds).
-// Benefit: fewer DB queries on repeated frontend hits (esp. on Slow 4G).
-// Important: this is an ephemeral in-memory cache — restarts clear it.
-// We purposely cache ONLY the public endpoint (no auth) to avoid leaking admin responses.
+// ---- Einfacher In-Memory-Cache für GET /tech (nur veröffentlichte Daten) ----
 const techCache = new Map(); // key -> { ts, data }
-const TECH_CACHE_TTL = Number(process.env.TECH_CACHE_TTL_SECONDS || 8); // default 8s
+const TECH_CACHE_TTL = Number(process.env.TECH_CACHE_TTL_SECONDS || 8); // Standard 8 Sekunden
 
 function cacheMiddleware(req, res, next) {
-  // Only handle GET / or root mounted path for published list
-  // Note: router is mounted at /tech, so req.path will be '/' for /tech
   if (req.method === 'GET' && (req.path === '/' || req.path === '')) {
     const key = 'tech:published';
     const cached = techCache.get(key);
     if (cached && Date.now() - cached.ts < TECH_CACHE_TTL * 1000) {
-      // serve cached copy
       res.set('X-Cache', 'HIT');
-      res.set('Cache-Control', `public, max-age=${TECH_CACHE_TTL}`); // assist proxies
+      res.set('Cache-Control', `public, max-age=${TECH_CACHE_TTL}`);
       return res.json(cached.data);
     }
 
-    // no cached value -> intercept res.json to cache the response after router fills it
-    // store original json
+    // Antwort abfangen und im Cache speichern
     const originalJson = res.json.bind(res);
     let called = false;
     res.json = (body) => {
@@ -88,7 +74,7 @@ function cacheMiddleware(req, res, next) {
           res.set('X-Cache', 'MISS');
           res.set('Cache-Control', `public, max-age=${TECH_CACHE_TTL}`);
         } catch (e) {
-          // ignore caching errors
+          // Ignorieren von Cache-Fehlern
         }
       }
       called = true;
@@ -96,14 +82,12 @@ function cacheMiddleware(req, res, next) {
     };
     return next();
   }
-
   return next();
 }
 
-// Attach cacheMiddleware only to /tech mount (so it does not affect other routes)
 app.use('/tech', cacheMiddleware);
 
-// ---- Healthcheck endpoints (fast) ----
+// ---- Healthcheck ----
 app.get('/health', (_, res) => res.json({ ok: true }));
 
 app.get('/db-check', async (_, res) => {
@@ -111,32 +95,29 @@ app.get('/db-check', async (_, res) => {
     const result = await db.query('SELECT NOW()');
     res.json({ db_time: result.rows[0].now });
   } catch (err) {
-    console.error('DB check failed', err);
-    res.status(500).json({ error: 'DB connection failed' });
+    console.error('DB-Check fehlgeschlagen', err);
+    res.status(500).json({ error: 'DB-Verbindung fehlgeschlagen' });
   }
 });
 
-// ---- Routes (unchanged) ----
-const techRoutes = require('./technologies');
+// ---- Routen ----
+const techRoutes = require('./routes/technologies');
 app.use('/tech', techRoutes);
 
-const { router: authRoutes } = require('./auth');
+const { router: authRoutes } = require('./routes/auth');
 app.use('/auth', authRoutes);
 
-// ❌ users.js kaldırıldı, buradaki import da silindi
 
-// ---- Graceful shutdown helpers (useful during tests / dev) ----
-// Exported app will be used by server.js which calls app.listen; to help tests exit cleanly,
-// we expose a small function to clear caches and allow a graceful shutdown if desired.
+// ---- Hilfsfunktionen für Tests / Shutdown ----
 app.clearCaches = () => {
   techCache.clear();
 };
 
-// ---- error handler (small improvement) ----
+// ---- Fehler-Handler ----
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err && err.stack ? err.stack : err);
+  console.error('Unbehandelter Fehler:', err && err.stack ? err.stack : err);
   if (!res.headersSent) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
