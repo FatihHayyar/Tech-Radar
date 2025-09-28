@@ -80,7 +80,7 @@ DATABASE_URL=postgres://postgres:password@localhost:5432/techradar
 ### 3. Datenbank einrichten
 
 createdb techradar
-psql -U postgres -d techradar -f backend/db/seed.sql
+psql -U postgres -d techradar -f backend/seed.sql
 
 ### 4. Standard-Accounts
 Nach dem Seed sind folgende Benutzer verfügbar:
@@ -149,6 +149,20 @@ npx cypress open
 
 Der Technologie-Radar-Viewer ist responsive (Desktop, Tablet, Mobile).
 Der Viewer lädt bei einer 4G-Verbindung innerhalb von 1s (gemessen mit Lighthouse).
+## Performance Tests
+
+- ✅ Backend Load Test: Passed (20 req/s, avg ~58 ms, 0 errors)
+- ✅ Lighthouse (Mobile / 4G)
+  - First Contentful Paint (FCP): 0.4s
+  - Largest Contentful Paint (LCP): 0.5s
+  - Total Blocking Time (TBT): 110ms
+  - Cumulative Layout Shift (CLS): 0
+  - Performance Score: 99/100
+  - Accessibility: 100/100
+  - Best Practices: 96/100
+  - SEO: 82/100
+
+📊 [👉 Full Lighthouse Report](./lighthouse-report.html)
 Sämtliche Anmeldungen werden im Backend protokolliert.
 Funktionalitäten sind durch automatisierte Unit- und Integrationstests abgedeckt.
 
