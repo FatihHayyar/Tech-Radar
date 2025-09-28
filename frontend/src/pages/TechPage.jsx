@@ -11,7 +11,7 @@ export default function TechPage() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("userId");
-    navigate("/"); // login sayfasına dön
+    navigate("/"); // Zurück zur Login-Seite
   };
 
   return (
@@ -41,7 +41,6 @@ export default function TechPage() {
 
         <div style={{ flex: 1 }} />
 
-        {/* ✅ Çıkış butonu */}
         <button
           onClick={handleLogout}
           style={{
@@ -53,7 +52,7 @@ export default function TechPage() {
             borderRadius: 4,
           }}
         >
-          🚪 Logout
+          🚪 Abmelden
         </button>
       </div>
 

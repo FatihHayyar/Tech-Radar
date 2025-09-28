@@ -1,22 +1,22 @@
 {
-  "name": "tech_lab",
+  "name": "tech-radar-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "node scripts/critical-inline.cjs",
+    "postbuild": "node scripts/critical-inline.cjs && node scripts/generate-dist-index.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "vite",
     "test": "vitest",
     "cy:open": "cypress open",
     "cy:run": "cypress run"
+    
   },
   "dependencies": {
     "axios": "^1.12.2",
-    "express": "^5.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1"

@@ -8,9 +8,7 @@ function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      // Artık absolute URL yok, sadece relative endpoint
       const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,10 +28,10 @@ function LoginPage() {
             navigate("/tech");
           }
         } else {
-          alert("❌ Login fehlgeschlagen");
+          alert("❌ Anmeldung fehlgeschlagen");
         }
       } else {
-        alert("❌ Login fehlgeschlagen");
+        alert("❌ Anmeldung fehlgeschlagen");
       }
     } catch (err) {
       console.error("Login Fehler:", err);
@@ -43,9 +41,8 @@ function LoginPage() {
 
   return (
     <div style={{ fontFamily: "sans-serif", maxWidth: "100%", margin: 0 }}>
-      <h1 style={{ textAlign: "center" }}>Technologie-Radar</h1>
       <div style={{ textAlign: "center" }}>
-        <h2>Login</h2>
+        <h2>Anmeldung</h2>
         <form
           onSubmit={handleLogin}
           style={{
@@ -70,7 +67,7 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button type="submit">Login</button>
+          <button type="submit">Anmelden</button>
         </form>
       </div>
     </div>

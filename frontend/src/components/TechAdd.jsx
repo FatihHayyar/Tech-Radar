@@ -22,7 +22,7 @@ export default function TechAdd({ onSuccess }) {
     }
 
     try {
-      const res = await fetch("http://localhost:4000/tech", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/tech`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default function TechAdd({ onSuccess }) {
         });
 
         if (onSuccess) {
-          onSuccess(); // 🔥 AdminPage'e haber ver → drafts tabına geç
+          onSuccess(); // nach erfolgreicher Speicherung → Entwürfe Tab wechseln
         }
       } else {
         alert("❌ Fehler: " + data.error);

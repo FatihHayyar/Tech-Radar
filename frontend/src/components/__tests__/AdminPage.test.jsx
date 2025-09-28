@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { vi } from "vitest";
 import AdminPage from "../../pages/AdminPage";
-
 
 // useNavigate mock
 const mockNavigate = vi.fn();
@@ -16,7 +15,6 @@ beforeEach(() => {
 
 test("redirects if no token in localStorage", () => {
   render(<AdminPage />);
-  // useEffect çalışınca navigate çağırmalı
   expect(mockNavigate).toHaveBeenCalledWith("/");
 });
 
@@ -28,14 +26,14 @@ test("redirects employee (role !== CTO or TECH_LEAD) to /tech", () => {
   expect(mockNavigate).toHaveBeenCalledWith("/tech");
 });
 
-test("renders and can switch tabs", async () => {
+test("renders and can switch tabs", () => {
   localStorage.setItem("token", "FAKE");
   localStorage.setItem("role", "CTO");
 
   render(<AdminPage />);
 
   // Başlık görünsün
-  expect(screen.getByText(/Admin Panel/i)).toBeInTheDocument();
+  expect(screen.getByText(/Administrationsbereich/i)).toBeInTheDocument();
 
   // Default tab: Technologien
   expect(screen.getByRole("button", { name: /Technologien/i })).toHaveClass("active");
@@ -57,7 +55,7 @@ test("logout clears storage and redirects to login", () => {
 
   render(<AdminPage />);
 
-  const logoutBtn = screen.getByRole("button", { name: /logout/i });
+  const logoutBtn = screen.getByRole("button", { name: /Abmelden/i });
   fireEvent.click(logoutBtn);
 
   expect(localStorage.getItem("token")).toBeNull();

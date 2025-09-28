@@ -31,7 +31,7 @@ export default function AdminPage() {
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="brand">
-          <h2>Admin Panel</h2>
+          <h2>Administrationsbereich</h2>
         </div>
 
         <div className="nav-buttons">
@@ -59,7 +59,7 @@ export default function AdminPage() {
 
         <div className="admin-footer">
           <button className="logout-btn" onClick={handleLogout}>
-            🚪 Logout
+            🚪 Abmelden
           </button>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function AdminPage() {
         {activeTab === "add" && (
           <TechAdd
             onSuccess={() => {
-              setActiveTab("drafts"); // 🔥 kayıt sonrası Entwürfe sekmesine geç
+              setActiveTab("drafts"); // nach erfolgreicher Speicherung zu "Entwürfe" wechseln
             }}
           />
         )}

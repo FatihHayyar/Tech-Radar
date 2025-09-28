@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import TechList from "../TechList";
 import { vi } from "vitest";
 
@@ -7,7 +7,7 @@ beforeAll(() => {
   global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
-      json: () => Promise.resolve([]), // default boş liste
+      json: () => Promise.resolve([]), // default: leere Liste
     })
   );
 });
@@ -35,7 +35,7 @@ test("renders a technology row when data is fetched", async () => {
     ok: true,
     json: () =>
       Promise.resolve([
-        { id: 1, name: "React", category: "Framework", ring: "Adopt", status: "PUBLISHED" },
+        { id: 1, name: "React", category: "Languages & Frameworks", ring: "Adopt", status: "PUBLISHED" },
       ]),
   });
 
@@ -58,16 +58,15 @@ test("filters technologies by category", async () => {
 
   render(<TechList />);
 
-  // React ve Docker aynı anda var
+  // React und Docker sichtbar
   expect(await screen.findByText("React")).toBeInTheDocument();
   expect(await screen.findByText("Docker")).toBeInTheDocument();
 
-  // Kategoriyi filtrele
+  // Kategorie filtern
   const select = screen.getByLabelText(/Kategorie:/i);
-  select.value = "Platforms";
-  select.dispatchEvent(new Event("change", { bubbles: true }));
+  fireEvent.change(select, { target: { value: "Platforms" } });
 
-  // Sadece Docker görünmeli
+  // Nur Docker sollte sichtbar sein
   expect(screen.queryByText("React")).not.toBeInTheDocument();
   expect(screen.getByText("Docker")).toBeInTheDocument();
 });

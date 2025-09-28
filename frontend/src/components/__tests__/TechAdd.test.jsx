@@ -2,14 +2,12 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import TechAdd from "../TechAdd";
 
-// useNavigate'i mockla (gerekirse)
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
 beforeEach(() => {
-  // fetch mock
   global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
@@ -17,9 +15,7 @@ beforeEach(() => {
     })
   );
 
-  // alert mock
   vi.spyOn(window, "alert").mockImplementation(() => {});
-
   localStorage.setItem("token", "FAKE_TOKEN");
 });
 
@@ -30,19 +26,17 @@ afterEach(() => {
 test("TechAdd renders and submits minimal required fields", async () => {
   render(<TechAdd />);
 
-  // Alanları doldur
-  const nameInput = screen.getByPlaceholderText(/Technologie-Name/i);
+  const nameInput = screen.getByPlaceholderText("Technologie-Name");
   const descTextarea = screen.getByPlaceholderText(/Beschreibung/i);
 
   const selects = screen.getAllByRole("combobox");
-  const categorySelect = selects[0]; // ilk select "category"
+  const categorySelect = selects[0]; // erstes Select = Kategorie
 
   fireEvent.change(nameInput, { target: { value: "ArgoCD" } });
-  fireEvent.change(descTextarea, { target: { value: "CD tool for K8s" } });
+  fireEvent.change(descTextarea, { target: { value: "CD-Tool für Kubernetes" } });
   fireEvent.change(categorySelect, { target: { value: "Tools" } });
 
-  // Kaydet
-  const saveBtn = screen.getByRole("button", { name: /Speichern|Save|➕/i });
+  const saveBtn = screen.getByRole("button", { name: /Speichern/i });
   fireEvent.click(saveBtn);
 
   await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
@@ -56,10 +50,9 @@ test("TechAdd renders and submits minimal required fields", async () => {
     expect.objectContaining({
       name: "ArgoCD",
       category: "Tools",
-      description: "CD tool for K8s",
+      description: "CD-Tool für Kubernetes",
     })
   );
 
-  // alert çağrıldı mı kontrol et
   expect(window.alert).toHaveBeenCalled();
 });

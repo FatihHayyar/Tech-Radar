@@ -1,8 +1,7 @@
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom/client';   // 🔥 eksik olan import eklendi
+import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
-
 
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const TechPage = React.lazy(() => import('./pages/TechPage'));
@@ -16,7 +15,7 @@ const router = createBrowserRouter([
       { 
         index: true, 
         element: (
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div>Lädt...</div>}>
             <LoginPage/>
           </Suspense>
         ) 
