@@ -92,9 +92,11 @@ Nach dem Seed sind folgende Benutzer verfügbar:
 ### 5. Backend starten
 
 cd backend
+
 npm install
+
 npm run dev   # Entwicklung (nodemon)
-# oder
+oder
 node server.js
 API läuft unter http://localhost:4000.
 
