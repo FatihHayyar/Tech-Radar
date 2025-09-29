@@ -67,6 +67,7 @@ Das Projekt bildet zwei Hauptteile ab:
 ### 1. Repository klonen
 
 git clone https://github.com/FatihHayyar/Tech-Radar.git
+
 cd Tech-Radar
 
 ### 2. Environment konfigurieren
@@ -74,13 +75,32 @@ cd Tech-Radar
 Im Verzeichnis backend/ eine .env Datei erstellen:
 
 PORT=4000
+
 JWT_SECRET=supersecret_dev
-DATABASE_URL=postgres://postgres:password@localhost:5432/techradar
 
-### 3. Datenbank einrichten
+DATABASE_URL=postgres://postgres:<yourpassword>@localhost:5432/techradar
 
-createdb techradar
+# Standard-Testnutzer
+TEST_EMAIL=cto@test.com
+TEST_PASSWORD=111111
+
+Im Verzeichnis frontend/ eine .env Datei erstellen:
+
+VITE_API_URL=http://localhost:4000
+
+### 3. Datenbank einrichten (PostgreSQL)
+
+psql -U postgres -c "CREATE DATABASE techradar;"
+
 psql -U postgres -d techradar -f backend/seed.sql
+
+⚠️ Hinweis: Falls bereits eine Datenbank mit dem Namen `techradar` existiert,
+
+> bitte zuerst löschen oder einen anderen Namen wählen.
+
+Löschen: psql -U postgres -c "DROP DATABASE techradar;"
+
+Oder neuen Namen verwenden: psql -U postgres -c "CREATE DATABASE techradar_demo;"
 
 ### 4. Standard-Accounts
 Nach dem Seed sind folgende Benutzer verfügbar:
@@ -115,8 +135,11 @@ PUT /tech/:id/publish — Technologie veröffentlichen
 ### 6. Frontend starten
 
 cd frontend
+
 npm install
+
 npm start
+
 Routen:
 
 / → Login

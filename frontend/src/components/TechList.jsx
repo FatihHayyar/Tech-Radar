@@ -9,7 +9,17 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
   const [editId, setEditId] = useState(null);
   const [editData, setEditData] = useState({});
   const [expandedId, setExpandedId] = useState(null);
+  const [role, setRole] = useState((localStorage.getItem("role") || "").toUpperCase());
   const token = localStorage.getItem("token");
+
+  const canEdit = role === "CTO" || role === "TECH_LEAD";
+
+  // role değiştiğinde otomatik güncelle
+  useEffect(() => {
+    const syncRole = () => setRole((localStorage.getItem("role") || "").toUpperCase());
+    window.addEventListener("storage", syncRole);
+    return () => window.removeEventListener("storage", syncRole);
+  }, []);
 
   const fetchTechs = async () => {
     try {
@@ -50,11 +60,13 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
     });
 
   const handleEdit = (tech) => {
+    if (!canEdit) return;
     setEditId(tech.id);
     setEditData({ ...tech, originalRing: tech.ring });
   };
 
   const handleSave = async () => {
+    if (!canEdit) return;
     if (!editData.name || !editData.category || !editData.tech_description) {
       alert("⚠️ Name, Kategorie und Beschreibung sind Pflichtfelder!");
       return;
@@ -105,6 +117,7 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
   };
 
   const handlePublish = async (tech) => {
+    if (!canEdit) return;
     if (!tech.ring || !tech.rationale) {
       alert("⚠️ Bitte Ring und Rationale ausfüllen, bevor publiziert werden kann!");
       return;
@@ -196,7 +209,7 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
               <th>Kategorie</th>
               <th>Ring</th>
               <th>Status</th>
-              <th>Aktionen</th>
+              {canEdit && <th>Aktionen</th>}
             </tr>
           </thead>
 
@@ -212,7 +225,7 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
                   }}
                 >
                   {editId === t.id ? (
-                    <td colSpan={5}>
+                    <td colSpan={canEdit ? 5 : 4}>
                       <div className="edit-box">
                         <input
                           placeholder="Name"
@@ -275,17 +288,19 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
                           }
                         />
 
-                        <div className="edit-actions">
-                          <button onClick={handleSave}>💾 Speichern</button>
-                          {t.status === "DRAFT" && (
-                            <button onClick={() => handlePublish(t)}>
-                              📢 Publish
+                        {canEdit && (
+                          <div className="edit-actions">
+                            <button onClick={handleSave}>💾 Speichern</button>
+                            {t.status === "DRAFT" && (
+                              <button onClick={() => handlePublish(t)}>
+                                📢 Publish
+                              </button>
+                            )}
+                            <button onClick={() => setEditId(null)}>
+                              ❌ Abbrechen
                             </button>
-                          )}
-                          <button onClick={() => setEditId(null)}>
-                            ❌ Abbrechen
-                          </button>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   ) : (
@@ -295,28 +310,30 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
                       <td data-label="Ring">{t.ring}</td>
                       <td data-label="Status">{t.status}</td>
 
-                      <td data-label="Aktionen">
-                        <div className="actions">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(t);
-                            }}
-                          >
-                            ✏️ Bearbeiten
-                          </button>
-                          {t.status === "DRAFT" && (
+                      {canEdit && (
+                        <td data-label="Aktionen">
+                          <div className="actions">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handlePublish(t);
+                                handleEdit(t);
                               }}
                             >
-                              📢 Publish
+                              ✏️ Bearbeiten
                             </button>
-                          )}
-                        </div>
-                      </td>
+                            {t.status === "DRAFT" && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePublish(t);
+                                }}
+                              >
+                                📢 Publish
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </>
                   )}
                 </tr>
@@ -324,7 +341,7 @@ export default function TechList({ reload, onlyPublished = false, onlyDrafts = f
                 {/* Desktop detail */}
                 {expandedId === t.id && (
                   <tr className="detail-row desktop-only">
-                    <td colSpan={5}>
+                    <td colSpan={canEdit ? 5 : 4}>
                       <div className="detail-box">
                         <h3>📌 {t.name}</h3>
                         <p><strong>Kategorie:</strong> {t.category}</p>
