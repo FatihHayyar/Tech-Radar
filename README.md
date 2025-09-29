@@ -1,10 +1,11 @@
 # Technologie-Radar
 
-Dieses Repository enthält die Umsetzung des Projekts *Technologie-Radar* im Modul **Web Programming Lab**.
+Dieses Repository enthält die Umsetzung des Projekts _Technologie-Radar_ im Modul **Web Programming Lab**.
 
 ---
 
 ## Kontext
+
 Der Technologie-Radar ist ein Werkzeug für das Technologie-Management in einem Unternehmen.  
 Technologien werden in vier Kategorien (Quadranten) eingeteilt:
 
@@ -22,43 +23,48 @@ Zusätzlich werden sie nach ihrer Reife (Ringen) klassifiziert:
 
 Das Projekt bildet zwei Hauptteile ab:
 
-- **Administration:** CTO/Tech-Lead kann neue Technologien erfassen, ändern und publizieren.  
-- **Viewer:** Mitarbeitende können publizierte Technologien strukturiert einsehen.  
+- **Administration:** CTO/Tech-Lead kann neue Technologien erfassen, ändern und publizieren.
+- **Viewer:** Mitarbeitende können publizierte Technologien strukturiert einsehen.
 
 ---
 
 ## Fachliche Anforderungen (User Stories, MoSCoW-Priorisierung)
 
 **Must**
-- User Story 2: Technologie erfassen  
-- User Story 6: Technologien anzeigen  
+
+- User Story 2: Technologie erfassen
+- User Story 6: Technologien anzeigen
 
 **Should**
-- User Story 3: Technologie publizieren  
-- User Story 4: Technologie ändern  
-- User Story 5: Technologie-Einordnung ändern  
+
+- User Story 3: Technologie publizieren
+- User Story 4: Technologie ändern
+- User Story 5: Technologie-Einordnung ändern
 
 **Could**
-- User Story 1: Anmelden in der Administration  
-- User Story 7: Anmelden im Viewer  
+
+- User Story 1: Anmelden in der Administration
+- User Story 7: Anmelden im Viewer
 
 ---
 
 ## Technologie-Stack
-- **Backend:** Node.js + Express  
-- **Datenbank:** PostgreSQL  
-- **Authentifizierung:** JWT (JSON Web Tokens)  
-- **Passwort-Hashing:** bcrypt  
-- **Frontend:** React (tabellarische Anzeige, TailwindCSS)  
-- **Dokumentation:** arc42 (Architekturdokumentation)  
-- **Tests:** Vitest (Unit), Cypress (Integration/E2E)  
+
+- **Backend:** Node.js + Express
+- **Datenbank:** PostgreSQL
+- **Authentifizierung:** JWT (JSON Web Tokens)
+- **Passwort-Hashing:** bcrypt
+- **Frontend:** React (tabellarische Anzeige, TailwindCSS)
+- **Dokumentation:** arc42 (Architekturdokumentation)
+- **Tests:** Vitest (Unit), Cypress (Integration/E2E)
 
 ---
 
 ## Abgrenzungen
-- Kein Multi-Tenant-Setup (System-Administration wird nicht umgesetzt).  
-- Frontend wird zunächst tabellarisch umgesetzt, kein grafisches Radar.  
-- Fokus liegt auf Backend-Funktionalität und Datenbank-Anbindung.  
+
+- Kein Multi-Tenant-Setup (System-Administration wird nicht umgesetzt).
+- Frontend wird zunächst tabellarisch umgesetzt, kein grafisches Radar.
+- Fokus liegt auf Backend-Funktionalität und Datenbank-Anbindung.
 
 ---
 
@@ -80,10 +86,6 @@ JWT_SECRET=supersecret_dev
 
 DATABASE_URL=postgres://postgres:<yourpassword>@localhost:5432/techradar
 
-# Standard-Testnutzer
-TEST_EMAIL=cto@test.com
-TEST_PASSWORD=111111
-
 Im Verzeichnis frontend/ eine .env Datei erstellen:
 
 VITE_API_URL=http://localhost:4000
@@ -103,6 +105,7 @@ Löschen: psql -U postgres -c "DROP DATABASE techradar;"
 Oder neuen Namen verwenden: psql -U postgres -c "CREATE DATABASE techradar_demo;"
 
 ### 4. Standard-Accounts
+
 Nach dem Seed sind folgende Benutzer verfügbar:
 
 **CTO →** `cto@test.com` / Passwort: `111111`  
@@ -115,7 +118,7 @@ cd backend
 
 npm install
 
-npm run dev   # Entwicklung (nodemon)
+npm run dev # Entwicklung (nodemon)
 oder
 node server.js
 API läuft unter http://localhost:4000.
@@ -149,6 +152,7 @@ Routen:
 /tech → Viewer (nur PUBLISHED sichtbar)
 
 ### 7. Tests
+
 Backend
 
 cd backend
@@ -172,6 +176,7 @@ npx cypress open
 
 Der Technologie-Radar-Viewer ist responsive (Desktop, Tablet, Mobile).
 Der Viewer lädt bei einer 4G-Verbindung innerhalb von 1s (gemessen mit Lighthouse).
+
 ## Performance Tests
 
 - ✅ Backend Load Test: Passed (20 req/s, avg ~58 ms, 0 errors)
@@ -190,10 +195,10 @@ Sämtliche Anmeldungen werden im Backend protokolliert.
 Funktionalitäten sind durch automatisierte Unit- und Integrationstests abgedeckt.
 
 ### 9. Dokumentation
+
 - [arc42 Architekturdokumentation](docs/arc42.md)
 - [Arbeitsjournal](docs/arbeitsjournal.md)
 - [Fazit & Reflexion](docs/reflexion.md)
-
 
 Hinweis
 Dieses Projekt ist für Lehr- und Demonstrationszwecke.
